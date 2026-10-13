@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#ffffff">
 <title>𝐄𝐀𝐑𝐍 𝐖𝐈𝐓𝐇 𝐊𝐀𝐉𝐀𝐋</title>
 
-<!-- Meta Pixel: browser PageView -->
+<!-- Meta Pixel -->
 <script>
 !function(f,b,e,v,n,t,s){
 if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -19,11 +19,9 @@ s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)
 fbq('init','2418349122268572');
 fbq('track','PageView');
 </script>
-
 <noscript>
 <img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=2418349122268572&ev=PageView&noscript=1"
-alt="">
+src="https://www.facebook.com/tr?id=2418349122268572&ev=PageView&noscript=1" alt="">
 </noscript>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,30 +34,31 @@ body{
   display:flex;justify-content:center;align-items:center;color:#111;padding:20px
 }
 .container{text-align:center;padding:20px;max-width:420px;width:100%}
-.logo{width:130px;height:130px;border-radius:50%;object-fit:cover;
-box-shadow:0 8px 30px rgba(0,0,0,.08)}
+.logo{
+  width:130px;height:130px;border-radius:50%;object-fit:cover;
+  box-shadow:0 8px 30px rgba(0,0,0,.08)
+}
 .brand{margin-top:28px;font-size:32px;font-weight:300;letter-spacing:3px}
 .headline{margin-top:18px;font-size:18px;font-weight:300;line-height:1.8;color:#444}
 .timer{margin-top:25px;font-size:13px;color:#777}
 #count{font-weight:600;color:#229ED9}
 .cta{
-display:block;margin:22px auto 0;text-decoration:none;background:#229ED9;
-color:#fff;padding:15px 24px;border-radius:999px;font-size:15px;
-font-weight:500;transition:.2s;box-shadow:0 6px 20px rgba(34,158,217,.15);
-max-width:280px;width:100%;border:0;cursor:pointer;font-family:inherit
+  display:block;margin:22px auto 0;background:#229ED9;color:#fff;
+  padding:15px 24px;border-radius:999px;font-size:15px;font-weight:500;
+  transition:.2s;box-shadow:0 6px 20px rgba(34,158,217,.15);
+  max-width:280px;width:100%;border:0;cursor:pointer;font-family:inherit
 }
 .cta:hover{transform:translateY(-2px)}
 .cta:disabled{opacity:.65;cursor:wait;transform:none}
 .status{font-size:12px;color:#777;margin-top:12px;min-height:36px;line-height:1.6}
 .footer{margin-top:45px;font-size:12px;color:#999;letter-spacing:1px}
 @media(max-width:480px){
-.logo{width:110px;height:110px}
-.brand{font-size:26px;letter-spacing:2px}
-.headline{font-size:16px}
+  .logo{width:110px;height:110px}
+  .brand{font-size:26px;letter-spacing:2px}
+  .headline{font-size:16px}
 }
 </style>
 </head>
-
 <body>
 <main class="container">
   <img
@@ -75,56 +74,44 @@ max-width:280px;width:100%;border:0;cursor:pointer;font-family:inherit
     Link refreshes in <span id="count">10</span> seconds
   </div>
 
-  <button id="joinButton" class="cta" type="button">
-    JOIN TELEGRAM
+  <button id="joinButton" class="cta" type="button" disabled>
+    PREPARING INVITE...
   </button>
 
   <div id="status" class="status" role="status" aria-live="polite">
-    Connecting...
+    Preparing your Telegram invite. Please wait...
   </div>
 
   <div class="footer">Ads Managed by GM ADS</div>
 </main>
 
 <script>
-const WORKER_URL =
+const WORKER =
   "https://telegram-landing-api.mannattiwari2008.workers.dev";
 
 const button = document.getElementById("joinButton");
 const statusEl = document.getElementById("status");
 const countEl = document.getElementById("count");
 
+let readyInvite = null;
+let readyEventId = null;
+let preparing = false;
 let seconds = 10;
-let refreshing = false;
-let creatingInvite = false;
+let refreshBusy = false;
 
-function cookie(name) {
-  const row = document.cookie
-    .split("; ")
-    .find(item => item.startsWith(name + "="));
-
-  return row ? decodeURIComponent(row.slice(name.length + 1)) : "";
+function uuid() {
+  return crypto.randomUUID
+    ? crypto.randomUUID()
+    : "evt-" + Date.now() + "-" + Math.random().toString(16).slice(2);
 }
 
-function getFbc() {
-  const existing = cookie("_fbc");
-  if (existing) return existing;
-
-  const fbclid = new URLSearchParams(location.search).get("fbclid");
-
-  return fbclid
-    ? `fb.1.${Date.now()}.${fbclid}`
-    : "";
+function getCookie(name) {
+  const entry = document.cookie.split("; ")
+    .find(v => v.startsWith(name + "="));
+  return entry ? decodeURIComponent(entry.slice(name.length + 1)) : "";
 }
 
-function newEventId() {
-  if (crypto.randomUUID) return crypto.randomUUID();
-
-  return "evt-" + Date.now() + "-" +
-    Math.random().toString(16).slice(2);
-}
-
-function isTelegramLink(value) {
+function validTelegramUrl(value) {
   try {
     const u = new URL(value);
     return u.protocol === "https:" &&
@@ -135,94 +122,116 @@ function isTelegramLink(value) {
   }
 }
 
-// This changes the displayed destination on each 10-second refresh.
+// This GET keeps the 10-second destination rotation running.
 async function refreshDestination() {
-  if (refreshing) return;
-  refreshing = true;
+  if (refreshBusy) return;
+  refreshBusy = true;
 
   try {
-    const response = await fetch(
-      WORKER_URL + "/api/destination?slug=default&_=" + Date.now(),
-      { cache: "no-store" }
+    const r = await fetch(
+      WORKER + "/api/destination?slug=default&_=" + Date.now(),
+      {cache:"no-store"}
     );
+    const data = await r.json();
 
-    const data = await response.json();
+    if (!r.ok || !data.ok) throw new Error("Refresh failed");
 
-    if (!response.ok || !data.ok ||
-        !isTelegramLink(data.destination)) {
-      throw new Error(data.error || "Destination unavailable");
-    }
-
-    // Keep the latest rotation link on the page.
-    button.dataset.destination = data.destination;
     button.style.background = data.theme || "#229ED9";
-    statusEl.textContent = "Telegram destination refreshed.";
-  } catch (error) {
-    console.error("Destination refresh:", error);
-    statusEl.textContent = "Refresh failed. You can retry Join.";
+  } catch (e) {
+    console.warn("Destination refresh failed", e);
   } finally {
-    refreshing = false;
+    refreshBusy = false;
   }
 }
 
-// Every click requests a new, single-use invite from the Worker.
-button.addEventListener("click", async function() {
-  if (creatingInvite) return;
+// Generate the next single-use invite BEFORE the next click.
+async function prepareInvite() {
+  if (preparing || readyInvite) return;
+  preparing = true;
 
-  creatingInvite = true;
   button.disabled = true;
-  button.textContent = "CREATING INVITE...";
-  statusEl.textContent = "Creating a new Telegram invite...";
+  button.textContent = "PREPARING INVITE...";
+  statusEl.textContent = "Preparing your next Telegram invite...";
 
-  const eventId = newEventId();
+  const eventId = uuid();
 
   try {
-    const response = await fetch(
-      WORKER_URL + "/api/new-invite",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          slug: "default",
-          eventId,
-          fbp: cookie("_fbp"),
-          fbc: getFbc()
-        }),
-        cache: "no-store"
-      }
-    );
+    const r = await fetch(WORKER + "/api/new-invite", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      cache: "no-store",
+      body: JSON.stringify({
+        slug: "default",
+        eventId,
+        fbp: getCookie("_fbp"),
+        fbc: getCookie("_fbc")
+      })
+    });
 
-    const data = await response.json();
+    const data = await r.json();
 
-    if (!response.ok || !data.ok ||
-        !isTelegramLink(data.destination)) {
-      throw new Error(data.error || "Invite generation failed");
+    if (!r.ok || !data.ok || !validTelegramUrl(data.destination)) {
+      throw new Error(data.error || "Invite creation failed");
     }
 
-    // Deduplicate this browser custom event with the CAPI event.
-    if (typeof window.fbq === "function") {
-      fbq(
-        "trackCustom",
-        "TelegramInviteIssued",
-        { content_name: "EARN WITH KAJAL" },
-        { eventID: eventId }
-      );
-    }
+    readyInvite = data.destination;
+    readyEventId = data.eventId || eventId;
 
-    statusEl.textContent = "Opening Telegram...";
-    window.location.assign(data.destination);
-  } catch (error) {
-    console.error("New invite failed:", error);
-    statusEl.textContent =
-      error.message || "Invite failed. Please try again.";
-    button.textContent = "TRY AGAIN";
     button.disabled = false;
-    creatingInvite = false;
+    button.textContent = "JOIN TELEGRAM";
+    statusEl.textContent = "Invite ready. Tap to open Telegram.";
+  } catch (e) {
+    console.error("Invite preparation failed", e);
+    button.disabled = false;
+    button.textContent = "RETRY INVITE";
+    statusEl.textContent = "Invite preparation failed. Tap to retry.";
+  } finally {
+    preparing = false;
   }
+}
+
+button.addEventListener("click", function() {
+  // No network wait here. Use the invite already prepared.
+  if (!readyInvite) {
+    prepareInvite();
+    statusEl.textContent = "Please wait until the invite is ready.";
+    return;
+  }
+
+  const invite = readyInvite;
+  const eventId = readyEventId;
+
+  readyInvite = null;
+  readyEventId = null;
+
+  // Open synchronously during the real user click.
+  const tab = window.open(invite, "_blank");
+
+  if (tab) {
+    tab.opener = null;
+  } else {
+    // Browser popup fallback.
+    window.location.assign(invite);
+  }
+
+  // Pixel event shares the ID returned for this invite.
+  if (typeof window.fbq === "function") {
+    fbq(
+      "trackCustom",
+      "TelegramInviteIssued",
+      {content_name:"EARN WITH KAJAL"},
+      {eventID:eventId}
+    );
+  }
+
+  // Prepare another unique invite for the next click.
+  prepareInvite();
 });
 
 refreshDestination();
+prepareInvite();
 
+// Refresh displayed destination metadata every 10 seconds.
 setInterval(function() {
   seconds--;
 
