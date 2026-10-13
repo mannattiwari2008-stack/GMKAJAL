@@ -1,34 +1,130 @@
 
-const PAGE_URL =
-  "https://mannattiwari2008-stack.github.io/GMKAJAL/";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+<title>𝐄𝐀𝐑𝐍 𝐖𝐈𝐓𝐇 𝐊𝐀𝐉𝐀𝐋</title>
 
-const SITE_ORIGIN =
-  "https://mannattiwari2008-stack.github.io";
+<!-- Meta Pixel: browser PageView -->
+<script>
+!function(f,b,e,v,n,t,s){
+if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;
+s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)
+}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','2418349122268572');
+fbq('track','PageView');
+</script>
 
-const PIXEL_ID = "2418349122268572";
-const GRAPH_VERSION = "v26.0";
+<noscript>
+<img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=2418349122268572&ev=PageView&noscript=1"
+alt="">
+</noscript>
 
-const POOL_KEY = "rotation-pool:default";
-const POOL_SIZE = 3;
-const POOL_REFRESH_MS = 7 * 60 * 1000;
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-const HEADERS = {
-  "Content-Type": "application/json; charset=utf-8",
-  "Cache-Control": "no-store",
-  "Access-Control-Allow-Origin": SITE_ORIGIN,
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-  "Vary": "Origin"
-};
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#fff;font-family:'Poppins',sans-serif;min-height:100vh;
+  display:flex;justify-content:center;align-items:center;color:#111;padding:20px
+}
+.container{text-align:center;padding:20px;max-width:420px;width:100%}
+.logo{width:130px;height:130px;border-radius:50%;object-fit:cover;
+box-shadow:0 8px 30px rgba(0,0,0,.08)}
+.brand{margin-top:28px;font-size:32px;font-weight:300;letter-spacing:3px}
+.headline{margin-top:18px;font-size:18px;font-weight:300;line-height:1.8;color:#444}
+.timer{margin-top:25px;font-size:13px;color:#777}
+#count{font-weight:600;color:#229ED9}
+.cta{
+display:block;margin:22px auto 0;text-decoration:none;background:#229ED9;
+color:#fff;padding:15px 24px;border-radius:999px;font-size:15px;
+font-weight:500;transition:.2s;box-shadow:0 6px 20px rgba(34,158,217,.15);
+max-width:280px;width:100%;border:0;cursor:pointer;font-family:inherit
+}
+.cta:hover{transform:translateY(-2px)}
+.cta:disabled{opacity:.65;cursor:wait;transform:none}
+.status{font-size:12px;color:#777;margin-top:12px;min-height:36px;line-height:1.6}
+.footer{margin-top:45px;font-size:12px;color:#999;letter-spacing:1px}
+@media(max-width:480px){
+.logo{width:110px;height:110px}
+.brand{font-size:26px;letter-spacing:2px}
+.headline{font-size:16px}
+}
+</style>
+</head>
 
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: HEADERS
-  });
+<body>
+<main class="container">
+  <img
+    src="https://mannattiwari2008-stack.github.io/GMKAJAL/kajallp.jpg"
+    alt="Earn With Kajal logo"
+    class="logo"
+  >
+
+  <div class="brand">𝐄𝐀𝐑𝐍 𝐖𝐈𝐓𝐇 𝐊𝐀𝐉𝐀𝐋</div>
+  <div class="headline">Kajal didi Ka Sytum</div>
+
+  <div class="timer">
+    Link refreshes in <span id="count">10</span> seconds
+  </div>
+
+  <button id="joinButton" class="cta" type="button">
+    JOIN TELEGRAM
+  </button>
+
+  <div id="status" class="status" role="status" aria-live="polite">
+    Connecting...
+  </div>
+
+  <div class="footer">Ads Managed by GM ADS</div>
+</main>
+
+<script>
+const WORKER_URL =
+  "https://telegram-landing-api.mannattiwari2008.workers.dev";
+
+const button = document.getElementById("joinButton");
+const statusEl = document.getElementById("status");
+const countEl = document.getElementById("count");
+
+let seconds = 10;
+let refreshing = false;
+let creatingInvite = false;
+
+function cookie(name) {
+  const row = document.cookie
+    .split("; ")
+    .find(item => item.startsWith(name + "="));
+
+  return row ? decodeURIComponent(row.slice(name.length + 1)) : "";
 }
 
-function validLink(value) {
+function getFbc() {
+  const existing = cookie("_fbc");
+  if (existing) return existing;
+
+  const fbclid = new URLSearchParams(location.search).get("fbclid");
+
+  return fbclid
+    ? `fb.1.${Date.now()}.${fbclid}`
+    : "";
+}
+
+function newEventId() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+
+  return "evt-" + Date.now() + "-" +
+    Math.random().toString(16).slice(2);
+}
+
+function isTelegramLink(value) {
   try {
     const u = new URL(value);
     return u.protocol === "https:" &&
@@ -39,490 +135,104 @@ function validLink(value) {
   }
 }
 
-function cleanString(value, max = 256) {
-  return typeof value === "string" ? value.slice(0, max) : "";
-}
+// This changes the displayed destination on each 10-second refresh.
+async function refreshDestination() {
+  if (refreshing) return;
+  refreshing = true;
 
-async function sha256(value) {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(value)
-  );
-
-  return [...new Uint8Array(digest)]
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-async function telegramCall(env, method, payload) {
-  if (!env.TELEGRAM_BOT_TOKEN) {
-    throw new Error("TELEGRAM_BOT_TOKEN secret missing");
-  }
-
-  const response = await fetch(
-    `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/${method}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    }
-  );
-
-  const result = await response.json();
-
-  if (!response.ok || !result.ok) {
-    console.error(
-      "Telegram API failed:",
-      result.description || response.status
+  try {
+    const response = await fetch(
+      WORKER_URL + "/api/destination?slug=default&_=" + Date.now(),
+      { cache: "no-store" }
     );
-    throw new Error("Telegram API request failed");
-  }
 
-  return result.result;
+    const data = await response.json();
+
+    if (!response.ok || !data.ok ||
+        !isTelegramLink(data.destination)) {
+      throw new Error(data.error || "Destination unavailable");
+    }
+
+    // Keep the latest rotation link on the page.
+    button.dataset.destination = data.destination;
+    button.style.background = data.theme || "#229ED9";
+    statusEl.textContent = "Telegram destination refreshed.";
+  } catch (error) {
+    console.error("Destination refresh:", error);
+    statusEl.textContent = "Refresh failed. You can retry Join.";
+  } finally {
+    refreshing = false;
+  }
 }
 
-// Configure Telegram's webhook once, then reuse it.
-async function ensureWebhook(env) {
-  if (
-    !env.TELEGRAM_BOT_TOKEN ||
-    !env.TELEGRAM_WEBHOOK_SECRET ||
-    !env.TELEGRAM_LINKS
-  ) {
-    return;
-  }
-
-  const webhookURL =
-    "https://telegram-landing-api.mannattiwari2008.workers.dev/telegram-webhook";
-
-  const secretHash = await sha256(env.TELEGRAM_WEBHOOK_SECRET);
-
-  const oldConfig = await env.TELEGRAM_LINKS.get(
-    "system:webhook-config",
-    "json"
-  );
-
-  if (
-    oldConfig?.url === webhookURL &&
-    oldConfig?.secretHash === secretHash
-  ) {
-    return;
-  }
-
-  await telegramCall(env, "setWebhook", {
-    url: webhookURL,
-    secret_token: env.TELEGRAM_WEBHOOK_SECRET,
-    allowed_updates: ["chat_member"]
-  });
-
-  await env.TELEGRAM_LINKS.put(
-    "system:webhook-config",
-    JSON.stringify({ url: webhookURL, secretHash })
-  );
-}
-
-async function createInvite(env, name) {
-  if (!env.TELEGRAM_CHANNEL_ID) {
-    throw new Error("TELEGRAM_CHANNEL_ID missing");
-  }
-
-  const result = await telegramCall(
-    env,
-    "createChatInviteLink",
-    {
-      chat_id: env.TELEGRAM_CHANNEL_ID,
-      name: name.slice(0, 32),
-      member_limit: 1,
-      expire_date: Math.floor(Date.now() / 1000) + 600
-    }
-  );
-
-  if (!validLink(result.invite_link)) {
-    throw new Error("Telegram returned an invalid invite");
-  }
-
-  return result.invite_link;
-}
-
-async function getPool(env) {
-  const now = Date.now();
-
-  const saved = await env.TELEGRAM_LINKS.get(POOL_KEY, "json");
-
-  if (
-    saved &&
-    Array.isArray(saved.links) &&
-    saved.links.length === POOL_SIZE &&
-    saved.links.every(validLink) &&
-    now - saved.createdAt < POOL_REFRESH_MS
-  ) {
-    return saved.links;
-  }
-
-  const links = [];
-
-  for (let i = 0; i < POOL_SIZE; i++) {
-    links.push(
-      await createInvite(env, `rotation-${crypto.randomUUID().slice(0, 8)}`)
-    );
-  }
-
-  await env.TELEGRAM_LINKS.put(
-    POOL_KEY,
-    JSON.stringify({ links, createdAt: now })
-  );
-
-  return links;
-}
-
-function buildUserData(meta) {
-  const userData = {
-    client_ip_address: meta.clientIp,
-    client_user_agent: meta.userAgent
-  };
-
-  if (meta.fbp) userData.fbp = meta.fbp;
-  if (meta.fbc) userData.fbc = meta.fbc;
-
-  return userData;
-}
-
-async function sendMetaEvent(env, event) {
-  if (!env.META_CAPI_ACCESS_TOKEN) {
-    throw new Error("META_CAPI_ACCESS_TOKEN missing");
-  }
-
-  const endpoint =
-    `https://graph.facebook.com/${GRAPH_VERSION}/${PIXEL_ID}/events` +
-    `?access_token=${encodeURIComponent(env.META_CAPI_ACCESS_TOKEN)}`;
-
-  const body = { data: [event] };
-
-  // Optional: add a test event code during testing only.
-  if (env.META_TEST_EVENT_CODE) {
-    body.test_event_code = env.META_TEST_EVENT_CODE;
-  }
-
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  });
-
-  const result = await response.json();
-
-  if (!response.ok || result.error) {
-    console.error(
-      "Meta CAPI error:",
-      result.error?.message || response.status
-    );
-    throw new Error("Meta CAPI rejected the event");
-  }
-
-  return result;
-}
-
-async function rateAllowed(env, request) {
-  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-  const key = `rate:${await sha256(ip)}`;
-  const now = Date.now();
-
-  const old = await env.TELEGRAM_LINKS.get(key, "json");
-
-  if (!old || now - old.start >= 60000) {
-    await env.TELEGRAM_LINKS.put(
-      key,
-      JSON.stringify({ start: now, count: 1 }),
-      { expirationTtl: 120 }
-    );
-    return true;
-  }
-
-  if (old.count >= 15) return false;
-
-  await env.TELEGRAM_LINKS.put(
-    key,
-    JSON.stringify({
-      start: old.start,
-      count: old.count + 1
-    }),
-    { expirationTtl: 120 }
-  );
-
-  return true;
-}
-
-async function processTelegramUpdate(env, update) {
-  const memberUpdate = update.chat_member;
-
-  if (!memberUpdate) return;
-
-  if (
-    String(memberUpdate.chat.id) !==
-    String(env.TELEGRAM_CHANNEL_ID)
-  ) {
-    return;
-  }
-
-  function isMember(member) {
-    if (!member) return false;
-
-    if (
-      ["creator", "administrator", "member"].includes(member.status)
-    ) {
-      return true;
-    }
-
-    return member.status === "restricted" &&
-      member.is_member === true;
-  }
-
-  const joined =
-    !isMember(memberUpdate.old_chat_member) &&
-    isMember(memberUpdate.new_chat_member);
-
-  if (!joined) return;
-
-  const inviteLink = memberUpdate.invite_link?.invite_link;
-  if (!inviteLink) return;
-
-  const mappingKey = `invite-map:${await sha256(inviteLink)}`;
-
-  // KV can be eventually consistent; retry briefly.
-  let meta = null;
-
-  for (let i = 0; i < 5; i++) {
-    meta = await env.TELEGRAM_LINKS.get(mappingKey, "json");
-    if (meta) break;
-    await new Promise(resolve => setTimeout(resolve, 300));
-  }
-
-  // No matching landing-page invite means we cannot attribute this join.
-  if (!meta) return;
-  if (meta.subscribeSent) return;
-
-  const event = {
-    event_name: "Subscribe",
-    event_time: Number(memberUpdate.date) ||
-      Math.floor(Date.now() / 1000),
-    event_id: `subscribe_${meta.eventId}`,
-    action_source: "website",
-    event_source_url: PAGE_URL,
-    user_data: buildUserData(meta),
-    custom_data: {
-      content_name: "EARN WITH KAJAL",
-      content_category: "Telegram channel"
-    }
-  };
-
-  // Throw on failure so Telegram may retry the webhook.
-  await sendMetaEvent(env, event);
-
-  meta.subscribeSent = true;
-  meta.subscribedAt = Date.now();
-
-  await env.TELEGRAM_LINKS.put(
-    mappingKey,
-    JSON.stringify(meta),
-    { expirationTtl: 2592000 }
-  );
-}
-
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
-    const origin = request.headers.get("Origin");
-
-    if (origin && origin !== SITE_ORIGIN) {
-      return json({ ok: false, error: "Origin not allowed" }, 403);
-    }
-
-    if (url.pathname === "/telegram-webhook") {
-      if (request.method !== "POST") {
-        return new Response("Method not allowed", { status: 405 });
-      }
-
-      if (
-        !env.TELEGRAM_WEBHOOK_SECRET ||
-        request.headers.get("X-Telegram-Bot-Api-Secret-Token") !==
-          env.TELEGRAM_WEBHOOK_SECRET
-      ) {
-        return new Response("Forbidden", { status: 403 });
-      }
-
-      try {
-        const update = await request.json();
-
-        const updateKey = `telegram-update:${update.update_id}`;
-
-        if (
-          update.update_id !== undefined &&
-          await env.TELEGRAM_LINKS.get(updateKey)
-        ) {
-          return new Response("OK");
-        }
-
-        await processTelegramUpdate(env, update);
-
-        if (update.update_id !== undefined) {
-          await env.TELEGRAM_LINKS.put(
-            updateKey,
-            "done",
-            { expirationTtl: 604800 }
-          );
-        }
-
-        return new Response("OK");
-      } catch (error) {
-        console.error("Webhook processing failed:", error.message);
-        return new Response("Webhook processing failed", { status: 500 });
-      }
-    }
-
-    if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: HEADERS });
-    }
-
-    if (url.pathname === "/" || url.pathname.startsWith("/p/")) {
-      return Response.redirect(PAGE_URL, 302);
-    }
-
-    if (url.pathname.startsWith("/api/")) {
-      try {
-        await ensureWebhook(env);
-      } catch (error) {
-        console.error("Webhook setup failed:", error.message);
-      }
-    }
-
-    if (url.pathname === "/api/config") {
-      return json({ ok: true, pages: ["default"] });
-    }
-
-    if (url.pathname === "/api/destination") {
-      if (request.method !== "GET") {
-        return json({ ok: false, error: "Method not allowed" }, 405);
-      }
-
-      try {
-        const slug = url.searchParams.get("slug") || "default";
-
-        if (slug !== "default") {
-          return json({ ok: false, error: "Page not found" }, 404);
-        }
-
-        const links = await getPool(env);
-        const slot = Math.floor(Date.now() / 10000);
-        const destination = links[slot % links.length];
-
-        return json({
-          ok: true,
-          title: "𝐄𝐀𝐑𝐍 𝐖𝐈𝐓𝐇 𝐊𝐀𝐉𝐀𝐋",
-          subtitle: "Kajal didi Ka Sytum",
-          buttonText: "JOIN TELEGRAM",
-          theme: "#229ED9",
-          destination,
-          refreshInSeconds: 10
-        });
-      } catch (error) {
-        console.error("Destination error:", error.message);
-        return json({ ok: false, error: "Destination refresh failed" }, 502);
-      }
-    }
-
-    if (url.pathname === "/api/new-invite") {
-      if (request.method !== "POST") {
-        return json({ ok: false, error: "Method not allowed" }, 405);
-      }
-
-      if (origin !== SITE_ORIGIN) {
-        return json({ ok: false, error: "Origin not allowed" }, 403);
-      }
-
-      try {
-        if (!await rateAllowed(env, request)) {
-          return json({
-            ok: false,
-            error: "Too many requests. Try again later."
-          }, 429);
-        }
-
-        let body = {};
-        try {
-          body = await request.json();
-        } catch {
-          return json({ ok: false, error: "Invalid JSON" }, 400);
-        }
-
-        if (body.slug && body.slug !== "default") {
-          return json({ ok: false, error: "Page not found" }, 404);
-        }
-
-        const eventId = cleanString(body.eventId, 100) ||
-          crypto.randomUUID();
-
-        const inviteLink = await createInvite(
-          env,
-          `join-${crypto.randomUUID().slice(0, 12)}`
-        );
-
-        const meta = {
+// Every click requests a new, single-use invite from the Worker.
+button.addEventListener("click", async function() {
+  if (creatingInvite) return;
+
+  creatingInvite = true;
+  button.disabled = true;
+  button.textContent = "CREATING INVITE...";
+  statusEl.textContent = "Creating a new Telegram invite...";
+
+  const eventId = newEventId();
+
+  try {
+    const response = await fetch(
+      WORKER_URL + "/api/new-invite",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug: "default",
           eventId,
-          fbp: cleanString(body.fbp),
-          fbc: cleanString(body.fbc),
-          clientIp: request.headers.get("CF-Connecting-IP") || "",
-          userAgent: cleanString(
-            request.headers.get("User-Agent") || "",
-            1000
-          ),
-          createdAt: Date.now(),
-          subscribeSent: false
-        };
-
-        const mappingKey =
-          `invite-map:${await sha256(inviteLink)}`;
-
-        await env.TELEGRAM_LINKS.put(
-          mappingKey,
-          JSON.stringify(meta),
-          { expirationTtl: 86400 }
-        );
-
-        // Track that an invite was issued. Do not call this a confirmed join.
-        const issuedEvent = {
-          event_name: "TelegramInviteIssued",
-          event_time: Math.floor(Date.now() / 1000),
-          event_id: eventId,
-          action_source: "website",
-          event_source_url: PAGE_URL,
-          user_data: buildUserData(meta),
-          custom_data: {
-            content_name: "EARN WITH KAJAL"
-          }
-        };
-
-        try {
-          await sendMetaEvent(env, issuedEvent);
-        } catch (error) {
-          // The invite should still be returned if Meta tracking fails.
-          console.error("Invite-issued CAPI failed:", error.message);
-        }
-
-        return json({
-          ok: true,
-          destination: inviteLink,
-          eventId,
-          expiresInSeconds: 600,
-          memberLimit: 1
-        });
-      } catch (error) {
-        console.error("Invite creation failed:", error.message);
-        return json({
-          ok: false,
-          error: "Could not create invite. Check token and channel permissions."
-        }, 502);
+          fbp: cookie("_fbp"),
+          fbc: getFbc()
+        }),
+        cache: "no-store"
       }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok ||
+        !isTelegramLink(data.destination)) {
+      throw new Error(data.error || "Invite generation failed");
     }
 
-    return json({ ok: false, error: "Not found" }, 404);
+    // Deduplicate this browser custom event with the CAPI event.
+    if (typeof window.fbq === "function") {
+      fbq(
+        "trackCustom",
+        "TelegramInviteIssued",
+        { content_name: "EARN WITH KAJAL" },
+        { eventID: eventId }
+      );
+    }
+
+    statusEl.textContent = "Opening Telegram...";
+    window.location.assign(data.destination);
+  } catch (error) {
+    console.error("New invite failed:", error);
+    statusEl.textContent =
+      error.message || "Invite failed. Please try again.";
+    button.textContent = "TRY AGAIN";
+    button.disabled = false;
+    creatingInvite = false;
   }
-};
+});
+
+refreshDestination();
+
+setInterval(function() {
+  seconds--;
+
+  if (seconds <= 0) {
+    seconds = 10;
+    refreshDestination();
+  }
+
+  countEl.textContent = seconds;
+}, 1000);
+</script>
+</body>
+</html>
