@@ -16,49 +16,260 @@ if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
 n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;
 s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)
 }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+
 fbq('init','2418349122268572');
 fbq('track','PageView');
 </script>
+
 <noscript>
 <img height="1" width="1" style="display:none"
 src="https://www.facebook.com/tr?id=2418349122268572&ev=PageView&noscript=1" alt="">
 </noscript>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
+
 body{
-  background:#fff;font-family:'Poppins',sans-serif;min-height:100vh;
-  display:flex;justify-content:center;align-items:center;color:#111;padding:20px
+  background:#fff;
+  font-family:'Poppins',sans-serif;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:#111;
+  padding:20px;
 }
-.container{text-align:center;padding:20px;max-width:420px;width:100%}
+
+.container{
+  text-align:center;
+  padding:20px;
+  max-width:420px;
+  width:100%;
+}
+
 .logo{
-  width:130px;height:130px;border-radius:50%;object-fit:cover;
-  box-shadow:0 8px 30px rgba(0,0,0,.08)
+  display:block;
+  width:130px;
+  height:130px;
+  margin:0 auto;
+  border-radius:50%;
+  object-fit:cover;
+  box-shadow:0 8px 30px rgba(0,0,0,.08);
 }
-.brand{margin-top:28px;font-size:32px;font-weight:300;letter-spacing:3px}
-.headline{margin-top:18px;font-size:18px;font-weight:300;line-height:1.8;color:#444}
-.timer{margin-top:25px;font-size:13px;color:#777}
-#count{font-weight:600;color:#229ED9}
+
+.brand{
+  margin-top:28px;
+  font-size:32px;
+  font-weight:300;
+  letter-spacing:3px;
+}
+
+.headline{
+  margin-top:18px;
+  font-size:18px;
+  font-weight:300;
+  line-height:1.8;
+  color:#444;
+}
+
+.timer{
+  margin-top:25px;
+  font-size:13px;
+  color:#777;
+}
+
+#count{
+  font-weight:700;
+  color:#229ED9;
+}
+
 .cta{
-  display:block;margin:22px auto 0;background:#229ED9;color:#fff;
-  padding:15px 24px;border-radius:999px;font-size:15px;font-weight:500;
-  transition:.2s;box-shadow:0 6px 20px rgba(34,158,217,.15);
-  max-width:280px;width:100%;border:0;cursor:pointer;font-family:inherit
+  display:block;
+  visibility:visible;
+  opacity:1;
+  position:relative;
+  overflow:hidden;
+  margin:22px auto 0;
+  background:linear-gradient(110deg,#168ac5,#229ED9,#37b6ee);
+  background-size:200% 100%;
+  color:#fff;
+  padding:16px 24px;
+  border:0;
+  border-radius:999px;
+  font-family:inherit;
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:.5px;
+  max-width:280px;
+  width:100%;
+  cursor:pointer;
+  box-shadow:0 7px 25px rgba(34,158,217,.26);
+  animation:buttonGlow 2.4s ease-in-out infinite;
+  -webkit-tap-highlight-color:transparent;
 }
-.cta:hover{transform:translateY(-2px)}
-.cta:disabled{opacity:.65;cursor:wait;transform:none}
-.status{font-size:12px;color:#777;margin-top:12px;min-height:36px;line-height:1.6}
-.footer{margin-top:45px;font-size:12px;color:#999;letter-spacing:1px}
+
+.cta::before{
+  content:"";
+  position:absolute;
+  top:-30%;
+  left:-100%;
+  width:55%;
+  height:160%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);
+  transform:skewX(-25deg);
+  animation:shine 3s ease-in-out infinite;
+}
+
+.cta:active{transform:scale(.97)}
+
+.cta:focus-visible{
+  outline:3px solid #111;
+  outline-offset:4px;
+}
+
+.cta span{
+  position:relative;
+  z-index:1;
+}
+
+.status{
+  font-size:12px;
+  color:#777;
+  margin-top:12px;
+  min-height:36px;
+  line-height:1.6;
+}
+
+.footer{
+  margin-top:45px;
+  font-size:12px;
+  color:#999;
+  letter-spacing:1px;
+}
+
+/* VIP opening animation */
+.vip-overlay{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:rgba(7,15,30,.94);
+  backdrop-filter:blur(14px);
+  opacity:0;
+  visibility:hidden;
+  transition:opacity .2s ease,visibility .2s ease;
+}
+
+.vip-overlay.show{
+  opacity:1;
+  visibility:visible;
+}
+
+.vip-content{
+  width:100%;
+  max-width:320px;
+  text-align:center;
+  color:#fff;
+  transform:translateY(12px) scale(.96);
+  transition:transform .25s ease;
+}
+
+.vip-overlay.show .vip-content{
+  transform:translateY(0) scale(1);
+}
+
+.vip-orb{
+  width:94px;
+  height:94px;
+  margin:0 auto 25px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  font-size:39px;
+  color:white;
+  background:radial-gradient(circle at 35% 30%,#71d9ff,#229ED9 55%,#07548b);
+  box-shadow:0 0 25px rgba(34,158,217,.65),0 0 65px rgba(34,158,217,.28);
+  animation:orbPulse 1s ease-in-out infinite alternate;
+}
+
+.vip-title{
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:1px;
+  animation:textPulse .9s ease-in-out infinite alternate;
+}
+
+.vip-subtitle{
+  color:#bdcde0;
+  font-size:13px;
+  margin-top:10px;
+}
+
+.loader{
+  display:flex;
+  justify-content:center;
+  gap:7px;
+  margin-top:25px;
+}
+
+.loader i{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#46c8ff;
+  animation:dotBounce .65s infinite alternate;
+}
+
+.loader i:nth-child(2){animation-delay:.16s}
+.loader i:nth-child(3){animation-delay:.32s}
+
+@keyframes buttonGlow{
+  0%,100%{background-position:0% 50%;box-shadow:0 7px 25px rgba(34,158,217,.22)}
+  50%{background-position:100% 50%;box-shadow:0 7px 32px rgba(34,158,217,.4)}
+}
+
+@keyframes shine{
+  0%,45%{left:-100%}
+  75%,100%{left:150%}
+}
+
+@keyframes orbPulse{
+  from{transform:scale(.95);box-shadow:0 0 20px rgba(34,158,217,.5)}
+  to{transform:scale(1.06);box-shadow:0 0 42px rgba(34,158,217,.85)}
+}
+
+@keyframes textPulse{
+  from{opacity:.78}
+  to{opacity:1}
+}
+
+@keyframes dotBounce{
+  from{opacity:.35;transform:translateY(0)}
+  to{opacity:1;transform:translateY(-7px)}
+}
+
 @media(max-width:480px){
   .logo{width:110px;height:110px}
   .brand{font-size:26px;letter-spacing:2px}
   .headline{font-size:16px}
 }
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+  }
+}
 </style>
 </head>
+
 <body>
 <main class="container">
   <img
@@ -74,16 +285,25 @@ body{
     Link refreshes in <span id="count">10</span> seconds
   </div>
 
-  <button id="joinButton" class="cta" type="button" disabled>
-    PREPARING INVITE...
+  <button id="joinButton" class="cta" type="button">
+    <span>JOIN TELEGRAM</span>
   </button>
 
   <div id="status" class="status" role="status" aria-live="polite">
-    Preparing your Telegram invite. Please wait...
+    Preparing your Telegram link...
   </div>
 
   <div class="footer">Ads Managed by GM ADS</div>
 </main>
+
+<div id="vipOverlay" class="vip-overlay" aria-hidden="true">
+  <div class="vip-content">
+    <div class="vip-orb">➤</div>
+    <div class="vip-title">OPENING VIP CHANNEL</div>
+    <div class="vip-subtitle">Connecting you to Telegram...</div>
+    <div class="loader"><i></i><i></i><i></i></div>
+  </div>
+</div>
 
 <script>
 const WORKER =
@@ -92,156 +312,202 @@ const WORKER =
 const button = document.getElementById("joinButton");
 const statusEl = document.getElementById("status");
 const countEl = document.getElementById("count");
+const overlay = document.getElementById("vipOverlay");
 
-let readyInvite = null;
-let readyEventId = null;
-let preparing = false;
+let readyInvites = [];
+let currentDestination = "";
+let fillingQueue = false;
+let refreshingDestination = false;
 let seconds = 10;
-let refreshBusy = false;
 
-function uuid() {
+const MAX_READY_INVITES = 3;
+
+function validTelegramLink(value){
+  try{
+    const u = new URL(value);
+    return u.protocol === "https:" &&
+      ["t.me","www.t.me","telegram.me"].includes(u.hostname) &&
+      u.pathname !== "/";
+  }catch{
+    return false;
+  }
+}
+
+function makeEventId(){
   return crypto.randomUUID
     ? crypto.randomUUID()
     : "evt-" + Date.now() + "-" + Math.random().toString(16).slice(2);
 }
 
-function getCookie(name) {
-  const entry = document.cookie.split("; ")
+function readCookie(name){
+  const item = document.cookie.split("; ")
     .find(v => v.startsWith(name + "="));
-  return entry ? decodeURIComponent(entry.slice(name.length + 1)) : "";
+  return item ? decodeURIComponent(item.slice(name.length + 1)) : "";
 }
 
-function validTelegramUrl(value) {
-  try {
-    const u = new URL(value);
-    return u.protocol === "https:" &&
-      ["t.me", "www.t.me", "telegram.me"].includes(u.hostname) &&
-      u.pathname !== "/";
-  } catch {
-    return false;
-  }
+function getFbc(){
+  const saved = readCookie("_fbc");
+  if(saved) return saved;
+
+  const clickId = new URLSearchParams(location.search).get("fbclid");
+  return clickId ? `fb.1.${Date.now()}.${clickId}` : "";
 }
 
-// This GET keeps the 10-second destination rotation running.
-async function refreshDestination() {
-  if (refreshBusy) return;
-  refreshBusy = true;
+/* Cache a rotating link for immediate fallback navigation. */
+async function refreshDestination(){
+  if(refreshingDestination) return;
+  refreshingDestination = true;
 
-  try {
-    const r = await fetch(
+  try{
+    const response = await fetch(
       WORKER + "/api/destination?slug=default&_=" + Date.now(),
       {cache:"no-store"}
     );
-    const data = await r.json();
 
-    if (!r.ok || !data.ok) throw new Error("Refresh failed");
+    const data = await response.json();
 
-    button.style.background = data.theme || "#229ED9";
-  } catch (e) {
-    console.warn("Destination refresh failed", e);
-  } finally {
-    refreshBusy = false;
-  }
-}
-
-// Generate the next single-use invite BEFORE the next click.
-async function prepareInvite() {
-  if (preparing || readyInvite) return;
-  preparing = true;
-
-  button.disabled = true;
-  button.textContent = "PREPARING INVITE...";
-  statusEl.textContent = "Preparing your next Telegram invite...";
-
-  const eventId = uuid();
-
-  try {
-    const r = await fetch(WORKER + "/api/new-invite", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      cache: "no-store",
-      body: JSON.stringify({
-        slug: "default",
-        eventId,
-        fbp: getCookie("_fbp"),
-        fbc: getCookie("_fbc")
-      })
-    });
-
-    const data = await r.json();
-
-    if (!r.ok || !data.ok || !validTelegramUrl(data.destination)) {
-      throw new Error(data.error || "Invite creation failed");
+    if(!response.ok || !data.ok ||
+       !validTelegramLink(data.destination)){
+      throw new Error(data.error || "Destination unavailable");
     }
 
-    readyInvite = data.destination;
-    readyEventId = data.eventId || eventId;
+    currentDestination = data.destination;
+    button.style.background = data.theme || "#229ED9";
 
-    button.disabled = false;
-    button.textContent = "JOIN TELEGRAM";
-    statusEl.textContent = "Invite ready. Tap to open Telegram.";
-  } catch (e) {
-    console.error("Invite preparation failed", e);
-    button.disabled = false;
-    button.textContent = "RETRY INVITE";
-    statusEl.textContent = "Invite preparation failed. Tap to retry.";
-  } finally {
-    preparing = false;
+    statusEl.textContent = readyInvites.length
+      ? "Telegram invite ready."
+      : "Getting your next fresh invite ready...";
+  }catch(error){
+    console.error("Destination refresh error:", error);
+    statusEl.textContent = "Preparing a Telegram invite in the background...";
+  }finally{
+    refreshingDestination = false;
   }
 }
 
-button.addEventListener("click", function() {
-  // No network wait here. Use the invite already prepared.
-  if (!readyInvite) {
-    prepareInvite();
-    statusEl.textContent = "Please wait until the invite is ready.";
+/*
+ Keep several single-use invites prepared before the user clicks.
+ A warm queue avoids waiting for Telegram's API during the click.
+*/
+async function fillInviteQueue(){
+  if(fillingQueue) return;
+  fillingQueue = true;
+
+  try{
+    while(readyInvites.length < MAX_READY_INVITES){
+      const eventId = makeEventId();
+
+      const response = await fetch(WORKER + "/api/new-invite",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        cache:"no-store",
+        body:JSON.stringify({
+          slug:"default",
+          eventId,
+          fbp:readCookie("_fbp"),
+          fbc:getFbc()
+        })
+      });
+
+      const data = await response.json();
+
+      if(!response.ok || !data.ok ||
+         !validTelegramLink(data.destination)){
+        throw new Error(data.error || "Invite creation failed");
+      }
+
+      readyInvites.push({
+        url:data.destination,
+        eventId:data.eventId || eventId
+      });
+
+      statusEl.textContent = "Telegram invite ready.";
+    }
+  }catch(error){
+    console.error("Invite queue error:",error);
+    statusEl.textContent = readyInvites.length
+      ? "Telegram invite ready."
+      : "Preparing link. Please try again if needed.";
+  }finally{
+    fillingQueue = false;
+  }
+}
+
+function showOpeningAnimation(){
+  overlay.classList.add("show");
+  overlay.setAttribute("aria-hidden","false");
+
+  // Restore the page animation after opening the Telegram tab.
+  setTimeout(()=>{
+    overlay.classList.remove("show");
+    overlay.setAttribute("aria-hidden","true");
+  },1100);
+}
+
+/*
+ Open a new tab synchronously during the user's click so browsers
+ are less likely to block it. If the queue is empty, use the cached
+ destination immediately and prepare fresh invites for next time.
+*/
+button.addEventListener("click",function(){
+  const ticket = readyInvites.shift() || null;
+  const destination = ticket?.url || currentDestination;
+
+  showOpeningAnimation();
+
+  button.querySelector("span").textContent = "OPENING VIP CHANNEL...";
+  statusEl.textContent = "Opening Telegram...";
+
+  if(destination && validTelegramLink(destination)){
+    const tab = window.open(destination,"_blank");
+
+    if(tab){
+      tab.opener = null;
+    }else{
+      // Popup blocker fallback: open in the same tab immediately.
+      window.location.assign(destination);
+      return;
+    }
+  }else{
+    // No cached destination is available yet; prepare a link.
+    statusEl.textContent = "Finishing Telegram link preparation...";
+    fillInviteQueue();
+    button.querySelector("span").textContent = "RETRY JOIN";
     return;
   }
 
-  const invite = readyInvite;
-  const eventId = readyEventId;
-
-  readyInvite = null;
-  readyEventId = null;
-
-  // Open synchronously during the real user click.
-  const tab = window.open(invite, "_blank");
-
-  if (tab) {
-    tab.opener = null;
-  } else {
-    // Browser popup fallback.
-    window.location.assign(invite);
-  }
-
-  // Pixel event shares the ID returned for this invite.
-  if (typeof window.fbq === "function") {
+  if(ticket && typeof window.fbq === "function"){
     fbq(
       "trackCustom",
       "TelegramInviteIssued",
       {content_name:"EARN WITH KAJAL"},
-      {eventID:eventId}
+      {eventID:ticket.eventId}
     );
   }
 
-  // Prepare another unique invite for the next click.
-  prepareInvite();
+  // Refill the queue for future clicks.
+  fillInviteQueue();
+
+  setTimeout(()=>{
+    button.querySelector("span").textContent = "JOIN TELEGRAM";
+    statusEl.textContent = "Ready to join Telegram again.";
+  },1000);
 });
 
+/* Prepare links and run the 10-second refresh independently. */
 refreshDestination();
-prepareInvite();
+fillInviteQueue();
 
-// Refresh displayed destination metadata every 10 seconds.
-setInterval(function() {
+setInterval(()=>{
   seconds--;
 
-  if (seconds <= 0) {
+  if(seconds <= 0){
     seconds = 10;
     refreshDestination();
   }
 
   countEl.textContent = seconds;
-}, 1000);
+},1000);
 </script>
 </body>
 </html>
