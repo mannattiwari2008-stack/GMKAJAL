@@ -19,6 +19,11 @@ s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)
 fbq('init','2418349122268572');
 fbq('track','PageView');
 </script>
+<noscript>
+<img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=2418349122268572&ev=PageView&noscript=1"
+alt="">
+</noscript>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -27,8 +32,7 @@ fbq('track','PageView');
 *{margin:0;padding:0;box-sizing:border-box}
 body{
   background:#fff;font-family:'Poppins',sans-serif;min-height:100vh;
-  display:flex;justify-content:center;align-items:center;color:#111;
-  padding:20px
+  display:flex;justify-content:center;align-items:center;color:#111;padding:20px
 }
 .container{text-align:center;padding:20px;max-width:420px;width:100%}
 .logo{
@@ -43,11 +47,12 @@ body{
   display:block;margin:22px auto 0;text-decoration:none;background:#229ED9;
   color:#fff;padding:15px 24px;border-radius:999px;font-size:15px;
   font-weight:500;transition:.2s;box-shadow:0 6px 20px rgba(34,158,217,.15);
-  max-width:280px
+  max-width:280px;width:100%;border:0;cursor:pointer;font-family:inherit
 }
 .cta:hover{transform:translateY(-2px)}
+.cta:disabled{opacity:.65;cursor:wait;transform:none}
 .cta:focus-visible{outline:3px solid #111;outline-offset:4px}
-.status{font-size:12px;color:#777;margin-top:12px;min-height:18px}
+.status{font-size:12px;color:#777;margin-top:12px;min-height:36px;line-height:1.6}
 .footer{margin-top:45px;font-size:12px;color:#999;letter-spacing:1px}
 @media(max-width:480px){
   .logo{width:110px;height:110px}
@@ -72,10 +77,9 @@ body{
     Link refreshes in <span id="count">10</span> seconds
   </div>
 
-  <a id="joinButton" class="cta" href="#" target="_blank"
-     rel="noopener noreferrer" aria-disabled="true">
-    LOADING...
-  </a>
+  <button id="joinButton" class="cta" type="button">
+    JOIN TELEGRAM
+  </button>
 
   <div id="status" class="status" role="status" aria-live="polite">
     Connecting...
@@ -85,69 +89,122 @@ body{
 </main>
 
 <script>
-const API_URL =
-  "https://telegram-landing-api.mannattiwari2008.workers.dev/api/destination?slug=default";
+const WORKER_URL =
+  "https://telegram-landing-api.mannattiwari2008.workers.dev";
 
 const button = document.getElementById("joinButton");
 const statusEl = document.getElementById("status");
 const countEl = document.getElementById("count");
 
 let seconds = 10;
-let destination = "";
-let requestInProgress = false;
+let currentDestination = "";
+let refreshing = false;
+let creatingInvite = false;
 
-async function refreshDestination() {
-  if (requestInProgress) return;
-  requestInProgress = true;
-
+function isTelegramLink(value) {
   try {
-    const response = await fetch(API_URL, {cache:"no-store"});
-    const data = await response.json();
-
-    if (!response.ok || !data.ok || !data.destination) {
-      throw new Error(data.error || "Destination unavailable");
-    }
-
-    // Only allow Telegram HTTPS links
-    const parsed = new URL(data.destination);
-    if (parsed.protocol !== "https:" ||
-        parsed.hostname !== "t.me") {
-      throw new Error("Invalid Telegram destination");
-    }
-
-    destination = parsed.href;
-    button.href = destination;
-    button.textContent = data.buttonText || "JOIN TELEGRAM";
-    button.style.background = data.theme || "#229ED9";
-    button.setAttribute("aria-disabled","false");
-    statusEl.textContent = "Telegram link ready";
-  } catch (error) {
-    statusEl.textContent = "Unable to load link. Retrying...";
-    button.removeAttribute("href");
-    button.setAttribute("aria-disabled","true");
-    destination = "";
-  } finally {
-    requestInProgress = false;
+    const url = new URL(value);
+    return url.protocol === "https:" &&
+      ["t.me", "www.t.me", "telegram.me"].includes(url.hostname) &&
+      url.pathname !== "/";
+  } catch {
+    return false;
   }
 }
 
-button.addEventListener("click", function(event) {
-  if (!destination) {
-    event.preventDefault();
-    statusEl.textContent = "Please wait for the link to load.";
+// Refresh the displayed destination every 10 seconds.
+// This GET uses the rotating destination pool.
+async function refreshDestination() {
+  if (refreshing) return;
+  refreshing = true;
+
+  try {
+    const response = await fetch(
+      WORKER_URL + "/api/destination?slug=default&_=" + Date.now(),
+      { method: "GET", cache: "no-store" }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok ||
+        !isTelegramLink(data.destination)) {
+      throw new Error(data.error || "Destination refresh failed");
+    }
+
+    currentDestination = data.destination;
+    button.dataset.destination = currentDestination;
+    button.style.background = data.theme || "#229ED9";
+
+    statusEl.textContent = "Telegram destination refreshed.";
+  } catch (error) {
+    console.error("Destination refresh failed:", error);
+    statusEl.textContent =
+      "Auto-refresh failed. Join button can still request a fresh invite.";
+  } finally {
+    refreshing = false;
+  }
+}
+
+// Every button click requests a brand-new single-use invite.
+button.addEventListener("click", async function () {
+  if (creatingInvite) return;
+
+  creatingInvite = true;
+  button.disabled = true;
+  button.textContent = "CREATING INVITE...";
+  statusEl.textContent = "Creating your private Telegram invite...";
+
+  try {
+    const response = await fetch(
+      WORKER_URL + "/api/new-invite",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: "default" }),
+        cache: "no-store"
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok ||
+        !isTelegramLink(data.destination)) {
+      throw new Error(data.error || "Could not create invite");
+    }
+
+    // This tracks invite issuance, not a confirmed Telegram join.
+    if (typeof window.fbq === "function") {
+      window.fbq("trackCustom", "TelegramInviteIssued");
+    }
+
+    statusEl.textContent = "Opening Telegram...";
+    window.location.assign(data.destination);
+
+  } catch (error) {
+    console.error("New invite request failed:", error);
+    statusEl.textContent =
+      error.message || "Invite creation failed. Please try again.";
+
+    button.textContent = "TRY AGAIN";
+    button.disabled = false;
+    creatingInvite = false;
   }
 });
 
-setInterval(function() {
+// Initial destination load.
+refreshDestination();
+
+// Countdown and automatic destination refresh.
+setInterval(function () {
   seconds--;
+
   if (seconds <= 0) {
     seconds = 10;
     refreshDestination();
   }
+
   countEl.textContent = seconds;
 }, 1000);
-
-refreshDestination();
 </script>
 </body>
 </html>
